@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FTTH Assistant — Sonatel</title>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <img src="/static/Logo sonatel.png" alt="Sonatel" class="logo-img" />
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Navigation</div>
+    <button class="nav-btn active" id="btnChat" onclick="showView('chat')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Assistant
+    </button>
+    <button class="nav-btn" id="btnDash" onclick="showView('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+    <div class="nav-label" style="margin-top:12px">Actions</div>
+    <button class="nav-btn" onclick="openModal('modalUrl')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      Indexer une URL
+    </button>
+    <button class="nav-btn" onclick="openModal('modalFile')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Importer un fichier
+    </button>
+    <button class="nav-btn" onclick="clearChat()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+      Nouvelle conversation
+    </button>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="status-badge">
+      <div class="status-dot"></div>
+      <span>meta/llama-3.1-8b-instruct</span>
+    </div>
+  </div>
+</aside>
+
+<main class="main">
+
+  <!-- VUE CHAT -->
+  <div class="view" id="viewChat">
+    <header class="header">
+      <div class="header-left">
+        <div class="header-avatar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div>
+          <div class="header-title">Assistant FTTH</div>
+          <div class="header-sub">Réseau fibre optique · Sénégal</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <label class="es-pill" id="esPill">
+          <input type="checkbox" checked />
+          <span class="dot"></span>
+          Elasticsearch
+        </label>
+        <button class="icon-btn" title="Nouvelle conversation" onclick="clearChat()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="messages" id="messages">
+      <div class="welcome" id="welcome">
+        <div class="welcome-logo">
+          <img src="/static/Logo sonatel.png" alt="Sonatel" />
+        </div>
+        <h2>Bonjour, comment puis-je vous aider ?</h2>
+        <p>Explorez les données du réseau FTTH Sonatel.<br>Choisissez une catégorie ci-dessous pour commencer.</p>
+        <div class="cards-grid" id="cardsGrid"></div>
+      </div>
+    </div>
+
+    <div class="input-area" id="inputArea" style="display:none">
+      <div class="input-wrap">
+        <textarea id="input" rows="1" placeholder="Posez votre question…"
+          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="envoyer()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+      <div class="input-hint">Entrée pour envoyer · Maj+Entrée pour nouvelle ligne</div>
+    </div>
+  </div>
+
+  <!-- VUE DASHBOARD -->
+  <div class="view" id="viewDashboard" style="display:none">
+    <header class="header">
+      <div class="header-left">
+        <div class="header-avatar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <div>
+          <div class="header-title">Dashboard FTTH</div>
+          <div class="header-sub">Vue d'ensemble du réseau · Temps réel</div>
+        </div>
+      </div>
+      <button class="icon-btn" onclick="loadDashboard()" title="Actualiser">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+      </button>
+    </header>
+    <div class="dash-body" id="dashBody">
+      <div class="dash-loading" id="dashLoading">
+        <div class="typing"><span></span><span></span><span></span></div>
+        <p>Chargement des données…</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer(event)">
+  <div class="drawer" id="drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-header">
+      <div class="drawer-icon-wrap" id="drawerIconWrap"></div>
+      <div>
+        <div class="drawer-title" id="drawerTitle"></div>
+        <div class="drawer-subtitle" id="drawerSubtitle"></div>
+      </div>
+      <button class="drawer-close" onclick="closeDrawerForce()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="drawer-questions" id="drawerQuestions"></div>
+  </div>
+</div>
+
+<!-- MODAL URL -->
+<div class="modal-overlay" id="modalUrl">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Indexer une URL</div>
+      <button class="modal-close" onclick="closeModal('modalUrl')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <input class="modal-input" id="urlInput" type="url" placeholder="https://example.com/page" />
+    <button class="modal-btn" onclick="loadUrl()">Indexer</button>
+    <div class="modal-msg" id="urlMsg"></div>
+  </div>
+</div>
+
+<!-- MODAL FILE -->
+<div class="modal-overlay" id="modalFile">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Importer un fichier</div>
+      <button class="modal-close" onclick="closeModal('modalFile')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <input class="modal-input" id="fileInput" type="file" accept=".pdf,.txt" />
+    <button class="modal-btn" onclick="uploadFile()">Indexer</button>
+    <div class="modal-msg" id="fileMsg"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="/static/js/app.js"></script>
+</body>
+</html>
